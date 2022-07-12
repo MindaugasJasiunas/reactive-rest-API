@@ -15,6 +15,8 @@
 	<description>Demo project for Spring Boot</description>
 	<properties>
 		<java.version>17</java.version>
+		<maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+		<postgresql.version>0.8.12.RELEASE</postgresql.version>
 	</properties>
 	<dependencies>
 
@@ -42,6 +44,17 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+
+		<!-- R2DBC -->
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.r2dbc</groupId>
+			<artifactId>r2dbc-postgresql</artifactId>
+			<version>${postgresql.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -54,7 +67,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.0</version>
+				<version>${maven.compiler.plugin.version}</version>
 				<configuration>
 					<annotationProcessorPaths>
 						<path>
