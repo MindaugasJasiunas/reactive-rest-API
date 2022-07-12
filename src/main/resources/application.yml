@@ -1,0 +1,8 @@
+spring:
+#  datasource:
+  r2dbc:
+#    url: jdbc:postgresql://0.0.0.0:5432/ouruserdb
+    database: ouruserdb
+    url: r2dbc:postgresql://0.0.0.0:5432/${spring.r2dbc.database}
+    username: root
+    password: rootroot
