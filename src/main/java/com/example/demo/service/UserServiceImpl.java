@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.User;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -28,6 +29,16 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public Mono<User> createUser(User user) {
+        UserValidator.ValidationResult result = UserValidator
+                .isUsernameValid()
+                .and(UserValidator.isPasswordValid())
+                .and(UserValidator.isFirstNameValid())
+                .and(UserValidator.isLastNameValid())
+                .apply(user);
+        if(result != UserValidator.ValidationResult.SUCCESS){
+            return Mono.error(() -> new RuntimeException("Submitted user is not valid: "+result.name()));
+        }
+
         Mono<User> userMono = Mono.just(user);
         return userMono
                 .filterWhen(this::userNotExistsInDBByUsername)
@@ -45,6 +56,15 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public Mono<User> updateUser(User user, String publicId) {
+        UserValidator.ValidationResult result = UserValidator
+                .isPasswordValid()
+                .and(UserValidator.isFirstNameValid())
+                .and(UserValidator.isLastNameValid())
+                .apply(user);
+        if(result != UserValidator.ValidationResult.SUCCESS){
+            return Mono.error(() -> new RuntimeException("Submitted user is not valid: "+result.name()));
+        }
+
         return userRepository
                 .findByPublicId(publicId)
                 .flatMap(existingUser -> {
