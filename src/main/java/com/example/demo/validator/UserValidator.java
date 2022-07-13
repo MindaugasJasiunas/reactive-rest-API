@@ -6,7 +6,14 @@ import java.util.function.Function;
 
 public interface UserValidator extends Function<User, UserValidator.ValidationResult> {
     enum ValidationResult{
-        SUCCESS, USERNAME_NOT_VALID, FIRSTNAME_NOT_VALID, LASTNAME_NOT_VALID, PASSWORD_NOT_VALID
+        SUCCESS("Success"), USERNAME_NOT_VALID("Username not valid"), FIRSTNAME_NOT_VALID("First name not valid"), LASTNAME_NOT_VALID("Last name not valid"), PASSWORD_NOT_VALID("Password not valid");
+        private String reason;
+        ValidationResult(String reason){
+            this.reason = reason;
+        }
+        public String getReason(){
+            return this.reason;
+        }
     }
 
     // validations

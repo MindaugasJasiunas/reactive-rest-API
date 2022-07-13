@@ -19,7 +19,8 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public Mono<User> getUserByPublicId(String publicId) {
-        return userRepository.findByPublicId(publicId);
+        return userRepository.findByPublicId(publicId)
+                .switchIfEmpty(Mono.error(() -> new RuntimeException("User doesn't exist")) );
     }
 
     @Override
@@ -29,14 +30,9 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public Mono<User> createUser(User user) {
-        UserValidator.ValidationResult result = UserValidator
-                .isUsernameValid()
-                .and(UserValidator.isPasswordValid())
-                .and(UserValidator.isFirstNameValid())
-                .and(UserValidator.isLastNameValid())
-                .apply(user);
+        UserValidator.ValidationResult result = isUserValid(user);
         if(result != UserValidator.ValidationResult.SUCCESS){
-            return Mono.error(() -> new RuntimeException("Submitted user is not valid: "+result.name()));
+            return Mono.error(() -> new RuntimeException("Submitted user is not valid: "+result.getReason()));
         }
 
         Mono<User> userMono = Mono.just(user);
@@ -51,16 +47,13 @@ public class UserServiceImpl implements UserService{
                     return userToSave;
                 })
                 .flatMap(userRepository::save)
-                .switchIfEmpty(Mono.empty());
+//                .switchIfEmpty(Mono.empty());
+                .switchIfEmpty(Mono.error(() -> new RuntimeException("User with provided username already exists")) );
     }
 
     @Override
     public Mono<User> updateUser(User user, String publicId) {
-        UserValidator.ValidationResult result = UserValidator
-                .isPasswordValid()
-                .and(UserValidator.isFirstNameValid())
-                .and(UserValidator.isLastNameValid())
-                .apply(user);
+        UserValidator.ValidationResult result = isUserValid(user);
         if(result != UserValidator.ValidationResult.SUCCESS){
             return Mono.error(() -> new RuntimeException("Submitted user is not valid: "+result.name()));
         }
@@ -71,11 +64,11 @@ public class UserServiceImpl implements UserService{
                     user.setId(existingUser.getId());
                     user.setPublicId(existingUser.getPublicId());
                     user.setLastModifiedDate(LocalDateTime.now());
-                    // prevent username change
-                    user.setUsername(existingUser.getUsername());
+                    user.setUsername(existingUser.getUsername());  // prevent username change
                     return userRepository.save(user);
                 })
-                .switchIfEmpty(Mono.empty());
+//                .switchIfEmpty(Mono.empty());
+                .switchIfEmpty(Mono.error(() -> new RuntimeException("User doesn't exist")) );
     }
 
     @Override
@@ -99,7 +92,8 @@ public class UserServiceImpl implements UserService{
                     }
                     return userRepository.save(existingUser);
                 })
-                .switchIfEmpty(Mono.empty());
+//                .switchIfEmpty(Mono.empty());
+                .switchIfEmpty(Mono.error(() -> new RuntimeException("User doesn't exist")) );
     }
 
     //async predicate
@@ -107,6 +101,16 @@ public class UserServiceImpl implements UserService{
         return userRepository.findByUsername(user.getUsername())
                 .flatMap(userFromDB -> Mono.just(false))
                 .switchIfEmpty(Mono.just(true));
+    }
+
+    private UserValidator.ValidationResult isUserValid(User user){
+        UserValidator.ValidationResult result = UserValidator
+                .isUsernameValid()
+                .and(UserValidator.isPasswordValid())
+                .and(UserValidator.isFirstNameValid())
+                .and(UserValidator.isLastNameValid())
+                .apply(user);
+        return result;
     }
 
 }
