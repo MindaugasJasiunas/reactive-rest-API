@@ -2,6 +2,7 @@ version: '3.8'
 services:
   postgreSQL:
     image: postgres
+    container_name: postreSQL-ourUserDB
     ports:
       - 5432:5432
       - 49153:49153
