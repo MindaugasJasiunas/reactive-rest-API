@@ -17,6 +17,7 @@
 		<java.version>17</java.version>
 		<maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
 		<postgresql.version>0.8.12.RELEASE</postgresql.version>
+		<auth0.java-jwt.version>3.19.2</auth0.java-jwt.version>
 	</properties>
 	<dependencies>
 
@@ -54,6 +55,24 @@
 			<groupId>io.r2dbc</groupId>
 			<artifactId>r2dbc-postgresql</artifactId>
 			<version>${postgresql.version}</version>
+		</dependency>
+
+		<!-- WebFlux Security -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- JWT -->
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>${auth0.java-jwt.version}</version>
 		</dependency>
 	</dependencies>
 

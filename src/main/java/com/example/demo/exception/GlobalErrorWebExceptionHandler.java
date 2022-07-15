@@ -33,7 +33,15 @@ public class GlobalErrorWebExceptionHandler extends AbstractErrorWebExceptionHan
 
     private Mono<ServerResponse> renderErrorResponse(ServerRequest request) {
         Map<String, Object> errorPropertiesMap = getErrorAttributes(request, ErrorAttributeOptions.defaults());
-        return ServerResponse.status(HttpStatus.BAD_REQUEST)
+
+        HttpStatus status = null;
+        try{
+            status = HttpStatus.valueOf((Integer) errorPropertiesMap.get("status"));
+        }catch (IllegalArgumentException e){
+            // do nothing if error
+        }
+
+        return ServerResponse.status(status != null ? status : HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(errorPropertiesMap));
     }

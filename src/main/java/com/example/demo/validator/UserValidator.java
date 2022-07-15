@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 public interface UserValidator extends Function<User, UserValidator.ValidationResult> {
     enum ValidationResult{
-        SUCCESS("Success"), USERNAME_NOT_VALID("Username not valid"), FIRSTNAME_NOT_VALID("First name not valid"), LASTNAME_NOT_VALID("Last name not valid"), PASSWORD_NOT_VALID("Password not valid");
+        SUCCESS("Success"), USERNAME_NOT_VALID("Username not valid"), FIRSTNAME_NOT_VALID("First name not valid"), LASTNAME_NOT_VALID("Last name not valid"), PASSWORD_NOT_VALID("Password not valid"), ROLE_NOT_PROVIDED("User ROLE is not provided");
         private String reason;
         ValidationResult(String reason){
             this.reason = reason;
@@ -31,6 +31,10 @@ public interface UserValidator extends Function<User, UserValidator.ValidationRe
 
     static UserValidator isPasswordValid(){
         return user -> (user.getPassword() != null && user.getPassword().trim().length() >= 8) ? ValidationResult.SUCCESS : ValidationResult.PASSWORD_NOT_VALID;
+    }
+
+    static UserValidator isRoleProvided(){
+        return user -> user.getRoleId() != null ? ValidationResult.SUCCESS : ValidationResult.ROLE_NOT_PROVIDED;
     }
 
     //at the end chain them together

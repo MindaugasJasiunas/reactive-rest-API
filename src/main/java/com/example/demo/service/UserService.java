@@ -11,4 +11,5 @@ public interface UserService {
     Mono<User> updateUser(User user, String publicId);
     Mono<Void> deleteUser(String publicId);
     Mono<User> patchUser(User user, String publicId);
+    Mono<User> registerUser(User user);
 }
