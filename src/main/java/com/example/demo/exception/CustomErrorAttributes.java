@@ -21,6 +21,12 @@ public class CustomErrorAttributes extends DefaultErrorAttributes {
 
         log.error(String.format("ERROR OCCURRED: %s", throwable));
 
+        if(throwable instanceof RuntimeException){
+            RuntimeException ex = (RuntimeException) throwable;
+            errorAttributesMap.put("message", ex.getMessage());
+            errorAttributesMap.put("status", HttpStatus.BAD_REQUEST.value());
+            errorAttributesMap.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+        }
         if(throwable instanceof AuthenticationCredentialsNotFoundException){  // Unauthorized
             AuthenticationCredentialsNotFoundException ex = (AuthenticationCredentialsNotFoundException) throwable;
             errorAttributesMap.put("message", ex.getMessage());
@@ -41,6 +47,7 @@ public class CustomErrorAttributes extends DefaultErrorAttributes {
                 errorAttributesMap.put("message", ex.getReason());
             }
         }
+
         // default status code
         errorAttributesMap.putIfAbsent("status", HttpStatus.BAD_REQUEST.value());
         return errorAttributesMap;

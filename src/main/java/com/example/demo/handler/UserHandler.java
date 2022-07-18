@@ -32,8 +32,8 @@ public class UserHandler {
                 //happy path
                 .flatMap(user -> ServerResponse.ok().bodyValue(user))
                 // error path
-                .switchIfEmpty(ServerResponse.notFound().build())
-                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, throwable.getMessage())));
+                .switchIfEmpty(ServerResponse.notFound().build());
+//                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, throwable.getMessage())));
     }
 
 
