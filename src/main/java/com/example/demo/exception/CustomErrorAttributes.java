@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -34,6 +35,12 @@ public class CustomErrorAttributes extends DefaultErrorAttributes {
             errorAttributesMap.put("status", HttpStatus.UNAUTHORIZED.value());
             errorAttributesMap.put("error", HttpStatus.UNAUTHORIZED.getReasonPhrase());
         }
+        if(throwable instanceof AccessDeniedException){  // Forbidden (not enough authorities)
+            AccessDeniedException ex = (AccessDeniedException) throwable;
+            errorAttributesMap.put("message", ex.getMessage());
+            errorAttributesMap.put("status", HttpStatus.FORBIDDEN.value());
+            errorAttributesMap.put("error", HttpStatus.FORBIDDEN.getReasonPhrase());
+        }
         if(throwable instanceof ResponseStatusException){
             ResponseStatusException ex = (ResponseStatusException) throwable;
 
@@ -41,8 +48,6 @@ public class CustomErrorAttributes extends DefaultErrorAttributes {
             if(ex.getReason() != null && ex.getReason().startsWith("executeMany; SQL")){
                 log.error(String.format("SQL ERROR: %s", ex.getReason()));
                 errorAttributesMap.put("message", "Error occurred. Please try again later.");
-//                errorAttributesMap.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-//                errorAttributesMap.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
             }else{
                 errorAttributesMap.put("message", ex.getReason());
             }
