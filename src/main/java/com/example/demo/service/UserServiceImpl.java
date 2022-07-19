@@ -128,6 +128,9 @@ public class UserServiceImpl implements UserService, ReactiveUserDetailsService 
                     if(user.getLastName() != null){
                         existingUser.setLastName(user.getLastName());
                     }
+                    if(user.getRoleId() != null){
+                        existingUser.setRoleId(user.getRoleId());
+                    }
                     return userRepository.save(existingUser);
                 })
                 .switchIfEmpty(Mono.error(() -> new RuntimeException("User doesn't exist")) );
