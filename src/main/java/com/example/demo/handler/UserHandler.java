@@ -41,8 +41,8 @@ public class UserHandler {
         return request.bodyToMono(User.class)
                 .flatMap(service::createUser)
                 .flatMap(createdUser -> ServerResponse.created(URI.create("http://localhost:8080/api/v1/users/" + createdUser.getPublicId())).build())
-                .switchIfEmpty(ServerResponse.badRequest().build())
-                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, throwable.getMessage())));
+                .switchIfEmpty(ServerResponse.badRequest().build());
+//                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, throwable.getMessage())));
     }
 
     public Mono<ServerResponse> updateUser(ServerRequest request) {
@@ -50,8 +50,8 @@ public class UserHandler {
         return request.bodyToMono(User.class)
                 .flatMap(userToSave -> service.updateUser(userToSave, publicId))
                 .flatMap(savedUser -> ServerResponse.noContent().build())
-                .switchIfEmpty(ServerResponse.badRequest().build())
-                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, throwable.getMessage())));
+                .switchIfEmpty(ServerResponse.badRequest().build());
+//                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, throwable.getMessage())));
     }
 
     public Mono<ServerResponse> patchUser(ServerRequest request) {
@@ -60,8 +60,8 @@ public class UserHandler {
         return request.bodyToMono(User.class)
                 .flatMap(userToSave -> service.patchUser(userToSave, publicId))
                 .flatMap(savedUser -> ServerResponse.noContent().build())
-                .switchIfEmpty(ServerResponse.badRequest().build())
-                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, throwable.getMessage())));
+                .switchIfEmpty(ServerResponse.badRequest().build());
+//                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, throwable.getMessage())));
     }
 
     public Mono<ServerResponse> deleteUser(ServerRequest request) {
