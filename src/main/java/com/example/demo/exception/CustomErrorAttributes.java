@@ -41,6 +41,16 @@ public class CustomErrorAttributes extends DefaultErrorAttributes {
             errorAttributesMap.put("status", HttpStatus.FORBIDDEN.value());
             errorAttributesMap.put("error", HttpStatus.FORBIDDEN.getReasonPhrase());
         }
+        if(throwable instanceof IllegalStateException){
+            IllegalStateException ex = (IllegalStateException) throwable;
+            errorAttributesMap.put("message", ex.getMessage());
+            errorAttributesMap.put("status", HttpStatus.BAD_REQUEST.value());
+            errorAttributesMap.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+            if(ex.getMessage() != null && ex.getMessage().startsWith("Required property")) {
+                log.error(String.format("DATA SORTING ERROR: %s", ex.getMessage()));
+                errorAttributesMap.put("message", "Error occurred when trying to sort by non existant field.");
+            }
+        }
         if(throwable instanceof ResponseStatusException){
             ResponseStatusException ex = (ResponseStatusException) throwable;
 

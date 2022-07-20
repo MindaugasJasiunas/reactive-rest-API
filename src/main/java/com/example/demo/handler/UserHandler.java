@@ -4,11 +4,14 @@ import com.example.demo.User;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -21,8 +24,30 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 public class UserHandler {
     private final UserService service;
 
+//    public Mono<ServerResponse> getUsers(ServerRequest request) {
+//        return ServerResponse.ok().contentType(APPLICATION_JSON).body(service.getUsers(), User.class);
+//    }
+
     public Mono<ServerResponse> getUsers(ServerRequest request) {
-        return ServerResponse.ok().contentType(APPLICATION_JSON).body(service.getUsers(), User.class);
+        int page = 0;
+        int size = 5;
+        String sortFieldName = "lastModifiedDate";
+
+        if(request.queryParam("page").isPresent()){
+            try{
+                page = Integer.parseInt(request.queryParam("page").get());
+            }catch (NumberFormatException e){}
+        }
+        if(request.queryParam("size").isPresent()){
+            try{
+                size = Integer.parseInt(request.queryParam("size").get());
+            }catch (NumberFormatException e){}
+        }
+        if(request.queryParam("sort").isPresent()){
+            sortFieldName = request.queryParam("sort").get();
+        }
+        //        return ServerResponse.ok().contentType(APPLICATION_JSON).body(BodyInserters.fromPublisher(service.getUsers(PageRequest.of(page, size)), new ParameterizedTypeReference<Page<User>>(){}));
+        return ServerResponse.ok().contentType(APPLICATION_JSON).body(BodyInserters.fromPublisher(service.getUsers(PageRequest.of(page, size).withSort(Sort.by(sortFieldName).descending())), new ParameterizedTypeReference<Page<User>>(){}));
     }
 
     public Mono<ServerResponse> getUserByPublicId(ServerRequest request) {

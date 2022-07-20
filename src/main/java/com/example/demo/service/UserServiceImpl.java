@@ -5,6 +5,9 @@ import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,8 +38,19 @@ public class UserServiceImpl implements UserService, ReactiveUserDetailsService 
 
     @PreAuthorize("hasAuthority('user:read')")
     @Override
+    @Deprecated
     public Flux<User> getUsers() {
         return userRepository.findAll().flatMap(this::populateUserWithRolesAndAuthorities);
+    }
+
+    @PreAuthorize("hasAuthority('user:read')")
+    @Override
+    public Mono<Page<User>> getUsers(PageRequest pageRequest) {
+        return userRepository.findAllBy(pageRequest)
+                .flatMap(this::populateUserWithRolesAndAuthorities)
+                .collectList()
+                .zipWith(userRepository.count())
+                .map(tuple -> new PageImpl<>(tuple.getT1(), pageRequest, tuple.getT2()));
     }
 
     @Override

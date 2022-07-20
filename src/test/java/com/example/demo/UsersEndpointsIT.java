@@ -13,10 +13,7 @@ import com.example.demo.security.jwt.JwtTokenProvider;
 import com.example.demo.service.UserServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -24,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -98,6 +96,34 @@ public class UsersEndpointsIT {
     @DisplayName("getAllUsers() with auth - user:read authority")
     @Test
     void getAllUsers_userReadAuth() {
+        Mockito.when(userRepository.findAllBy(ArgumentMatchers.any(Pageable.class))).thenReturn(Flux.fromIterable(users));
+        Mockito.when(userRepository.count()).thenReturn(Mono.just(10L));
+
+        client.get().uri("/api/v1/users")
+                .headers(http -> http.setBearerAuth(userRoleToken)) // JWT
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.totalElements").isEqualTo(10)  // from userRepository.count()
+                .jsonPath("$.number").isEqualTo(0)  // default page number - 0
+                .jsonPath("$.size").isEqualTo(5)  // default items per page - 5
+                .jsonPath("$.numberOfElements").isEqualTo(3)
+                .jsonPath("$.content").isNotEmpty()
+                .jsonPath("$.content").isArray()
+                // assert that populateUserWithRolesAndAuthorities method is working as expected
+                .jsonPath("$.content[0].role").isNotEmpty()
+                .jsonPath("$.content[0].role.authorities").isNotEmpty();
+
+        Mockito.verify(userRepository, Mockito.times(1)).findAllBy(ArgumentMatchers.any(Pageable.class));
+        Mockito.verify(roleRepository, Mockito.times(3)).findById(ArgumentMatchers.anyLong());
+        Mockito.verify(roleRepository, Mockito.times(3)).getAuthoritiesByRoleId(ArgumentMatchers.anyLong());
+    }
+
+    @Disabled(value = "Disabled because of pagination & sorting implemented")
+    @DisplayName("getAllUsers() with auth - user:read authority")
+    @Test
+    void getAllUsers_userReadAuth_OLD() {
         Mockito.when(userRepository.findAll()).thenReturn(Flux.fromIterable(users));
 
         client.get().uri("/api/v1/users")
@@ -106,11 +132,11 @@ public class UsersEndpointsIT {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(User.class).value(userList -> {
-                    Assertions.assertEquals(3, userList.size());
-                    Assertions.assertEquals(users.get(0).getUsername(), userList.get(0).getUsername());
-                    // assert that populateUserWithRolesAndAuthorities method is working as expected
-                    Assertions.assertNotNull(userList.get(0).getRole());
-                    Assertions.assertNotNull(userList.get(0).getRole().getAuthorities());
+            Assertions.assertEquals(3, userList.size());
+            Assertions.assertEquals(users.get(0).getUsername(), userList.get(0).getUsername());
+            // assert that populateUserWithRolesAndAuthorities method is working as expected
+            Assertions.assertNotNull(userList.get(0).getRole());
+            Assertions.assertNotNull(userList.get(0).getRole().getAuthorities());
         });
 
         Mockito.verify(userRepository, Mockito.times(1)).findAll();
