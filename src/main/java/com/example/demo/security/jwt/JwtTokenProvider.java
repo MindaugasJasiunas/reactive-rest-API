@@ -8,6 +8,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
@@ -25,7 +26,8 @@ import java.util.stream.Stream;
 @ConfigurationProperties(prefix = "jwt")
 public class JwtTokenProvider {
     private final String secretKey;
-    private final Integer tokenExpirationAfterMilliseconds;
+    private final Integer refreshTokenExpirationAfterMilliseconds;
+    private final Integer accessTokenExpirationAfterMilliseconds;
 
     public String generateJwtToken(UserDetails userDetails){
         // get claims from authenticated user
@@ -36,12 +38,14 @@ public class JwtTokenProvider {
                 .withAudience("AppName Administration")
                 .withIssuedAt(new Date())
                 .withSubject(userDetails.getUsername())
-                .withArrayClaim("authorities", claims.toArray(new String[0]))  // convert List< String> to String[]
-                .withExpiresAt(new Date(System.currentTimeMillis() + tokenExpirationAfterMilliseconds))
+                // refresh token will not have authorities to prevent accessing resources directly
+//                .withArrayClaim("authorities", claims.toArray(new String[0]))  // convert List< String> to String[]
+                .withExpiresAt(new Date(System.currentTimeMillis() + refreshTokenExpirationAfterMilliseconds))
                 .sign(Algorithm.HMAC512(secretKey));
     }
 
     public Set<SimpleGrantedAuthority> getAuthoritiesFromToken(String token) {
+        if(getClaims(token).get("authorities") == null) return Collections.emptySet();
         return Stream.of(getClaims(token).get("authorities"))
                 .map(claims -> claims.asArray(String.class))
                 .flatMap(strings -> Stream.of(strings))
@@ -90,5 +94,31 @@ public class JwtTokenProvider {
             throw new JWTVerificationException("Token cannot be verified");
         }
         return verifier;
+    }
+
+    public String refreshAccessToken(UserDetails userDetails, String refreshToken){
+        try{
+            getJWTVerifier().verify(refreshToken);
+        }catch (TokenExpiredException e){
+            throw new JWTVerificationException("Expired refresh token. Please login.");
+        }catch (Exception e){
+            throw new JWTVerificationException("Malformed JWT. Please login");
+        }
+        DecodedJWT decodedRefreshToken = JWT.decode(refreshToken);
+        Map<String, Claim> claims = decodedRefreshToken.getClaims();
+
+        // return new access token
+        return JWT.create()
+                .withIssuer(claims.get("iss").asString())
+                .withAudience(claims.get("aud").asString())
+                .withSubject(decodedRefreshToken.getSubject())
+                // populate token with authorities
+                .withArrayClaim("authorities", getClaimsFromUser(userDetails).toArray(new String[0]))  // convert List< String> to String[]
+
+                // set new issuedAt & expiration
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(System.currentTimeMillis() + accessTokenExpirationAfterMilliseconds)) // 7minutes
+
+                .sign(Algorithm.HMAC512(secretKey));
     }
 }

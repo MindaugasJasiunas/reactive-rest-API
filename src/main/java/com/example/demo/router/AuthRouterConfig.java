@@ -16,6 +16,7 @@ public class AuthRouterConfig {
         return RouterFunctions.route()
                 .POST("/login", RequestPredicates.accept(MediaType.APPLICATION_JSON), authHandler::login)
                 .POST("/register", RequestPredicates.accept(MediaType.APPLICATION_JSON), authHandler::register)
+                .POST("/resettoken", RequestPredicates.accept(MediaType.APPLICATION_JSON), authHandler::resetAccessToken)
                 .build();
     }
 }

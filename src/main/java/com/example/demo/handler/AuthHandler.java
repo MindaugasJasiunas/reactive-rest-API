@@ -48,4 +48,22 @@ public class AuthHandler {
                 .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, throwable.getMessage())));
     }
 
+    public Mono<ServerResponse> resetAccessToken(ServerRequest request){
+        String refreshToken = request.headers().firstHeader(HttpHeaders.AUTHORIZATION);
+        if(refreshToken == null) return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token expired or invalid. Please login."));
+
+        refreshToken = refreshToken.substring(7);
+
+        if(jwtUtil.isTokenValid(refreshToken)){
+            String username = jwtUtil.getSubject(refreshToken);
+
+            // find user by username & if exists - generate new token & return
+            String finalRefreshToken = refreshToken;
+            return userDetailsService.findByUsername(username)
+                    .flatMap(userDetails -> ServerResponse.ok().header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", jwtUtil.refreshAccessToken(userDetails, finalRefreshToken))).build())
+                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token expired or invalid. Please login.")));
+        }
+        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token expired or invalid. Please login."));
+    }
+
 }

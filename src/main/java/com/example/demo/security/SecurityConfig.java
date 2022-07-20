@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .pathMatchers("/").permitAll()
                 .pathMatchers("/api/v1/users/**").permitAll()
                 .pathMatchers("/login", "/register").permitAll()
+                .pathMatchers("/resettoken").permitAll()
                 .anyExchange().authenticated()
 
                 // disable CSRF

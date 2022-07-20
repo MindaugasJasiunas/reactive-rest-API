@@ -9,4 +9,5 @@ spring:
 
 jwt:
   secretKey: SuperLongAndVerySecureKey-[].~^+$&4
-  tokenExpirationAfterMilliseconds: 86400000
+  refreshTokenExpirationAfterMilliseconds: 86400000
+  accessTokenExpirationAfterMilliseconds: 420000
