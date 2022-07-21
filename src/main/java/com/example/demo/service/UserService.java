@@ -15,4 +15,5 @@ public interface UserService {
     Mono<Void> deleteUser(String publicId);
     Mono<User> patchUser(User user, String publicId);
     Mono<User> registerUser(User user);
+    Mono<User> findUserByUsername(String username);
 }

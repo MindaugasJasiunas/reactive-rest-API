@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService, ReactiveUserDetailsService 
         return userRepository.deleteByPublicId(publicId);
     }
 
-    @PreAuthorize("hasAuthority('user:update')")
+//    @PreAuthorize("hasAuthority('user:update')") // added to security config instead
     @Override
     public Mono<User> patchUser(User user, String publicId) {
         return userRepository
@@ -145,6 +145,8 @@ public class UserServiceImpl implements UserService, ReactiveUserDetailsService 
                     if(user.getRoleId() != null){
                         existingUser.setRoleId(user.getRoleId());
                     }
+                    existingUser.setEnabled(user.isEnabled());
+
                     return userRepository.save(existingUser);
                 })
                 .switchIfEmpty(Mono.error(() -> new RuntimeException("User doesn't exist")) );
@@ -184,6 +186,12 @@ public class UserServiceImpl implements UserService, ReactiveUserDetailsService 
                 });
     }
 
+    @Override
+    public Mono<User> findUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .flatMap(this::populateUserWithRolesAndAuthorities)
+                .switchIfEmpty(Mono.error(() -> new RuntimeException("User doesn't exist")) );
+    }
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {

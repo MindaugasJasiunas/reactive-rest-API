@@ -44,3 +44,12 @@ CREATE TABLE if NOT EXISTS role_authority
     authority_id                     int references authority(id),
     PRIMARY KEY(role_id, authority_id)
 );
+
+CREATE TABLE if NOT EXISTS password_reset
+(
+    username          varchar (255) NOT NULL,
+    link              varchar (255) NOT NULL,
+    email             varchar (255),
+    PRIMARY KEY(username, link),
+    UNIQUE(username, link, email)
+);

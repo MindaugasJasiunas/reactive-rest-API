@@ -36,6 +36,8 @@ public class SecurityConfig {
                 .pathMatchers("/api/v1/users/**").permitAll()
                 .pathMatchers("/login", "/register").permitAll()
                 .pathMatchers("/resettoken").permitAll()
+                .pathMatchers("/reset", "/restore").permitAll()
+                .pathMatchers(HttpMethod.PATCH, "api/v1/users/{publicId}").hasAuthority("user:update")
                 .anyExchange().authenticated()
 
                 // disable CSRF

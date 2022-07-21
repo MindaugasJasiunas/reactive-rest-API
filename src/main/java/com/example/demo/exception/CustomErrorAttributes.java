@@ -53,14 +53,13 @@ public class CustomErrorAttributes extends DefaultErrorAttributes {
         }
         if(throwable instanceof ResponseStatusException){
             ResponseStatusException ex = (ResponseStatusException) throwable;
+            errorAttributesMap.put("message", ex.getReason());
+        }
 
-            // if SQL error - hide error from user & log
-            if(ex.getReason() != null && ex.getReason().startsWith("executeMany; SQL")){
-                log.error(String.format("SQL ERROR: %s", ex.getReason()));
-                errorAttributesMap.put("message", "Error occurred. Please try again later.");
-            }else{
-                errorAttributesMap.put("message", ex.getReason());
-            }
+        // if SQL error - hide error from user & log
+        if(throwable.getMessage() != null && throwable.getMessage().startsWith("executeMany; SQL")){
+            log.error(String.format("SQL ERROR: %s", throwable.getMessage()));
+            errorAttributesMap.put("message", "Error occurred. Please try again later.");
         }
 
         // default status code
