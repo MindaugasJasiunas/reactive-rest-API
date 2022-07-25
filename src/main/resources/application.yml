@@ -7,6 +7,18 @@ spring:
     username: root
     password: rootroot
 
+  application:
+    name: users-service
+server:
+  port: ${PORT:0}    # if port 0 - random port assigned
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+
 jwt:
   secretKey: SuperLongAndVerySecureKey-[].~^+$&4
   refreshTokenExpirationAfterMilliseconds: 86400000
