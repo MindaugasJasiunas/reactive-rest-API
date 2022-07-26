@@ -1,7 +1,5 @@
 spring:
-#  datasource:
   r2dbc:
-#    url: jdbc:postgresql://0.0.0.0:5432/ouruserdb
     database: ouruserdb
     url: r2dbc:postgresql://0.0.0.0:5432/${spring.r2dbc.database}
     username: root
@@ -12,6 +10,11 @@ spring:
 
   config:
     import: optional:configserver:http://localhost:8888
+
+#disable service discovery for local profile to not try & reach repository
+  cloud:
+    discovery:
+      enabled: false
 
 server:
   port: ${PORT:0}    # if port 0 - random port assigned
