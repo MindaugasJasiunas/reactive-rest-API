@@ -31,14 +31,14 @@ public class DemoApplication {
 	CommandLineRunner initDatabase() {
 		return args -> {
 			// initial users
-//			User simpleUser = new User(null, UUID.randomUUID(), "johndoe", "password", "John", "Doe", LocalDateTime.now(), LocalDateTime.now(), 1L, null, true, true, true, true);
-//			userRepo.save(simpleUser).subscribe();
-//
-//			User adminUser = new User(null, UUID.randomUUID(), "admin", "password", "Admin", "Admin", LocalDateTime.now(), LocalDateTime.now(), 3L, null, true, true, true, true);
-//			userRepo.save(adminUser).subscribe();
-//
-//			User courier = new User(null, UUID.randomUUID(), "janedoe", "password", "Jane", "Doe", LocalDateTime.now(), LocalDateTime.now(), 4L, null, true, true, true, true);
-//			userRepo.save(courier).subscribe();
+			User simpleUser = new User(null, UUID.randomUUID(), "johndoe", "password", "John", "Doe", LocalDateTime.now(), LocalDateTime.now(), 1L, null, true, true, true, true);
+			userRepo.save(simpleUser).subscribe();
+
+			User adminUser = new User(null, UUID.randomUUID(), "admin", "password", "Admin", "Admin", LocalDateTime.now(), LocalDateTime.now(), 3L, null, true, true, true, true);
+			userRepo.save(adminUser).subscribe();
+
+			User courier = new User(null, UUID.randomUUID(), "janedoe", "password", "Jane", "Doe", LocalDateTime.now(), LocalDateTime.now(), 4L, null, true, true, true, true);
+			userRepo.save(courier).subscribe();
 		};
 	}
 
